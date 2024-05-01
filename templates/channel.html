@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <header class="d-flex justify-content-center py-3">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>sACN</title>
+    <link href="{{ url_for('static', filename='styles/bootstrap.min.css')}}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='styles/test.css')}}" rel="stylesheet">
+    <ul class="nav nav-pills">
+      <li class="nav-item"><a href="/channel" class="nav-link active" aria-current="page">Channel</a></li>
+      <li class="nav-item"><a href="/projector" class="nav-link">Projector control</a></li>
+    </ul>
+  </header>
+  <body>
+    <div class="container">
+      <form method="post" action="/channel" class="form-row">
+        <div class="d-flex flex-column py-3 form-group">
+          <label for="channel" class="form-label"><strong>Номер</strong></label>
+          <input type="text" value="{{ address }}" name="channel" class="form-control w-5 py-3" required="">
+        </div>
+        <div class="d-flex btn-group-vertical">
+          <input type="submit" value="ON" name="open" class="btn btn-success rounded-pill btn-lg py-3 mb-3">
+          <input type="submit" value="OFF" name="close" class="btn btn-danger rounded-pill btn-lg py-3 mb-3">
+          <input type="submit" value="RemDim" name="remdim" class="btn btn-info rounded-pill btn-lg py-3 mb-3">
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
