@@ -1,56 +1,9 @@
-from pythonosc.udp_client import SimpleUDPClient
-from pythonosc.osc_server import AsyncIOOSCUDPServer
-from pythonosc.dispatcher import Dispatcher
-import asyncio
 from flask import Flask, render_template, request
 from projector import Projector
 from typing import List
 
 
-def filter_handler(address, *args):
-    print(f"{address}: {args}")
-
-
-dispatcher = Dispatcher()
-dispatcher.map("/filter", filter_handler)
-
-ip = "127.0.0.1"
-port = 1337
-
-server = AsyncIOOSCUDPServer((ip, port), dispatcher, asyncio.get_event_loop())
-server.serve()
-
-ip = "192.168.1.43"
-port = 1337
-
-client = SimpleUDPClient(ip, port)  # Create client
-
 app = Flask(__name__)
-
-
-@app.route('/')
-def hello_world():
-    return render_template('channel.html')
-
-
-@app.route('/channel', methods=['GET', 'POST'])
-def channel():
-    if request.method == 'POST':
-        chan = int(request.form.get('channel'))
-        if request.form.get('open') == 'ON':
-            client.send_message(f"/eos/chan/{chan}/full", None)
-            return render_template('channel.html', address=chan)
-        elif request.form.get('close') == 'OFF':
-            client.send_message(f"/eos/chan/{chan}/out", None)
-            return render_template('channel.html', address=chan)
-        elif request.form.get('remdim') == 'RemDim':
-            client.send_message(f"/eos/chan/{chan}/remdim", None)
-            return render_template('channel.html', address=chan)
-        else:
-            print('WTF')
-    elif request.method == 'GET':
-        return render_template('channel.html')
-
 
 projector_list = [
     ('10.101.10.124', 1024, 'admin1', 'Panasonic108', 'Бельэтаж'),
@@ -74,6 +27,12 @@ def get_on_projectros():
 
 
 projectors = get_on_projectros()
+
+
+@app.route('/')
+def hello_world():
+    return render_template('projector.html',
+                           projectors=get_on_projectros())
 
 
 @app.route('/projector', methods=['GET', 'POST'])
@@ -191,6 +150,30 @@ def group_shutter_off():
         return render_template('projector.html', projectors=projectors)
 
 
+@app.route('/resShutterOpen', methods=['GET'])
+def res_shutter_open():
+    global projectors
+    pjs = request.args.get('projectors')
+    if len(projectors) >= len(pjs):
+        for i in pjs:
+            projectors[int(i)].shutter_open()
+            projectors[int(i)].shutter = True
+    print(pjs)
+    return 'ok'
+
+
+@app.route('/resShutterClose', methods=['GET'])
+def res_shutter_close():
+    global projectors
+    pjs = request.args.get('projectors')
+    if len(projectors) >= len(pjs):
+        for i in pjs:
+            projectors[int(i)].shutter_close()
+            projectors[int(i)].shutter = False
+    print(pjs)
+    return 'ok'
+
+
 @app.route('/deleteProj', methods=['POST'])
 def deleteProj():
     global projectors
@@ -203,4 +186,4 @@ def deleteProj():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='192.168.1.148', debug=True)
